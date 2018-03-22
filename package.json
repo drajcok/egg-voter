@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "backend": "./node_modules/nodemon/bin/nodemon.js server.js",
+    "start": "ng serve --proxy-config proxy.config.json",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
@@ -21,12 +22,16 @@
     "@angular/platform-browser": "^5.1.0",
     "@angular/platform-browser-dynamic": "^5.1.0",
     "@angular/router": "^5.1.0",
+    "@ng-bootstrap/ng-bootstrap": "^1.0.2",
+    "bootstrap": "^4.0.0",
     "core-js": "^2.4.1",
+    "express": "^4.16.3",
+    "nodemon": "^1.17.2",
     "rxjs": "^5.5.6",
     "zone.js": "^0.8.19"
   },
   "devDependencies": {
-    "@angular/cli": "1.6.4",
+    "@angular/cli": "^1.7.3",
     "@angular/compiler-cli": "^5.1.0",
     "@angular/language-service": "^5.1.0",
     "@types/jasmine": "~2.8.3",
