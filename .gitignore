@@ -26,6 +26,9 @@
 !.vscode/extensions.json
 
 # misc
+/src/assets/*
+notes.txt
+egg-voter.db
 /.sass-cache
 /connect.lock
 /coverage
