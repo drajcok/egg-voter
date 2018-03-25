@@ -1,0 +1,16 @@
+<div *ngIf="!voter.name">Use the login button to login.</div>
+<div *ngIf="voter.name">
+  <div *ngIf="waitingForContest">Waiting for a new contest to start...</div>
+  <div *ngIf="!waitingForContest">
+    <div id="contest-name">{{contest.name}}</div>
+    <div>Please vote for {{contest.ballotSlots}} eggs:</div>
+    <form #form="ngForm">
+        <label *ngFor="let vote of votes; let i = index; trackBy:trackByIndex">
+            {{i+1}}. <input type="number" min="1" max="50" [(ngModel)]="votes[i]" name="vote-{{i}}">
+        </label>
+      <button (click)="submitVotes()" class="btn btn-primary"
+              [disabled]="!form.valid">Submit votes</button>
+    </form>
+    <div [innerHTML]="errorMsg"></div>
+  </div>
+</div>
