@@ -8,23 +8,33 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   selectDefault = ['select your name'];
-  voters = [];
+  userList      = [];
+  errMsg: string;
   constructor(private dataService: DataService, private router: Router) {}
   ngOnInit() {
-    // we can't clear the voter in this thread of execution because the
+    // we can't clear the user in this thread of execution because the
     // main component already rendered... "expression has changed after
     // it was checked"
     setTimeout( () => {
-      this.dataService.clearVoter();  // logout
-      this.dataService.getVoters()
-        .subscribe(voters =>
-            this.voters = this.selectDefault.concat(voters.split('\n')));
+      this.dataService.logout();
+      this.dataService.getUserList()
+        .subscribe(userList =>
+            this.userList = this.selectDefault.concat(userList.split('\n')));
     });
   }
-  login(voter: string) {
-    // TODO verify on server that this voter is not already logged in!
-    if (voter === this.selectDefault[0]) { return; }
-    this.dataService.setVoter(voter);
-    this.router.navigateByUrl('/contest');
+  login(username: string) {
+    if (username === this.selectDefault[0]) {
+      this.errMsg = '';
+      return;
+    }
+    this.dataService.login(username)
+      .subscribe(
+        ()    => this.router.navigateByUrl('/contest'),
+        (err) => {
+          console.log('err', err);
+          this.errMsg = `login failed: ${err.error}`;
+          // TBD change selected value back to default
+        }
+      );
   }
 }

@@ -1,38 +1,43 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
-import { Contest } from './interfaces';
+import { User, Contest } from './interfaces';
 
 @Injectable()
 export class DataService {
-  voter = {name: ''};
+  user = new User('');  // do not create another User... components have a reference to this one
   contest: Contest;
 
   constructor(private http: HttpClient) {}
-  getVoters() {
-    return this.http.get<string>('assets/voters.txt', {responseType: 'text'});
+  getUserList() {
+    return this.http.get<string>('api/user_list', {responseType: 'text'} );
   }
-  getLoggedInVoters() {
-    // TODO fix to make a real AJAX request, not reading a file
-    return this.http.get<string>('assets/voters.txt?'+ new Date().getTime(),  {responseType: 'text'});
+  getLoggedInUsers() {
+    return this.http.post<string[]>('api/loggedin_users', null);
   }
-  setVoter(voter: string) {
-    // TODO ensure voter is not already logged in
-    this.voter.name = voter;
-    console.log('voter set to', this.voter);
+  login(username: string) {
+    return this.http.post<string>('api/login', { name: username }, {responseType: 'text'} )
+      .pipe(
+        tap( () => this.user.name = username )
+      );
   }
-  clearVoter() {
-    this.voter.name = '';
-    console.log('voter cleared');
-    // TODO logout user
+  logout() {
+    if (this.user.name) {
+      this.http.post('api/logout', this.user, {responseType: 'text'})
+        .subscribe();
+      this.user.name = '';
+    }
+  }
+  logoutUser(username: string) {  // admin capability
+    const user = new User(username);
+    this.http.post('api/logout', user, {responseType: 'text'})
+        .subscribe();
   }
   createContest(contest: Contest) {
-    return this.http.post('api/contest/new', contest);
+    return this.http.post('api/create_contest', contest);
   }
   getContestInfo() {
-    // TODO fix to make a real AJAX request, not reading a file
-    // return this.http.get('assets/votes/' + contest + '?'+ new Date().getTime());
-    return this.http.get<Contest>('api/contest/info?' + new Date().getTime())
+    return this.http.post<Contest>('api/contest_info', null)
       .pipe(
         tap( contest => {
           // console.log('service', contest)
@@ -40,17 +45,18 @@ export class DataService {
         })
       );
   }
-  submitVotes(votes) {
-    return this.http.post('api/contest/vote', {
-      voter:   this.voter,
+  submitBallot(contest, votes) {
+    return this.http.post('api/cast_vote', {
+      user:   this.user,
       contestId: 
       votes:   votes,
     });
   }
-  getContestVotes(contest: string) {
-    // TODO fix to make a real AJAX request, not reading a file
-    //return this.http.get('assets/votes/' + contest + '?'+ new Date().getTime());
-    return this.http.get('assets/votes.txt?' + new Date().getTime());
+  getBallotsCastCount(contest: Contest) {
+    return this.http.post('api/ballots_cast', contest);
+  }
+  getContestResults(contest: Contest) {
+    return this.http.post('api/contest_results', contest);
   }
   initDb() {
     this.http.post('api/initdb', '')

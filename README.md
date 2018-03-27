@@ -5,7 +5,7 @@ Select your name, and vote for eggs!
 ## Development server
 
 Run `npm start` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-Run `npm run backend` for the backend server. (On Windows use `./node_modules/nodemon/bin/nodemon.js server.js`) The Angular dev server will send all /api requests to the express server running on port 3000. Nodemon watches the server.js file and reloads the server on changes.
+Run `npm run backend` for the backend server. (On Windows, in a bash shell use `$ ./node_modules/nodemon/bin/nodemon.js server.js`) The Angular dev server will send all /api requests to the express server running on port 3000. Nodemon watches the server.js file and reloads the server on changes.
 
 ## Code scaffolding
 

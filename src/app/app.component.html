@@ -5,8 +5,8 @@
       <div id="navbar" class="navbar-nav mr-auto">
       </div>
       <div class="navbar-nav">
-        <a *ngIf="!voter.name" class="nav-item nav-link" routerLink="/login">Login</a>
-        <a *ngIf="voter.name" class="nav-item nav-link" routerLink="/login">{{voter.name}}</a>
+        <a *ngIf="!user.name" class="nav-item nav-link" routerLink="/login">Login</a>
+        <a *ngIf="user.name" class="nav-item nav-link" routerLink="/login">{{user.name}}</a>
       </div>
     </nav>
     </div>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../data.service';
-import { Voter, Contest } from '../interfaces';
+import { User, Contest } from '../interfaces';
 import { Router } from '@angular/router';
 
 @Component({
@@ -11,15 +11,15 @@ export class ContestComponent implements OnInit {
   maxEggCount       = 50;
   pollingPeriod     = 5 * 1000;  // 5 seconds
   waitingForContest = true;
-  voter:     Voter;
+  user:      User;
   contest:   Contest;
   votes:     Array<number>;
   errorMsg:  string;
 
   constructor(private dataService: DataService, private router: Router) {}
   ngOnInit() {
-    this.voter = this.dataService.voter;
-    if (!this.voter.name) {
+    this.user = this.dataService.user;
+    if (!this.user.name) {
       this.router.navigateByUrl('/');
     } else {
       this.pollForActiveContest();
@@ -56,11 +56,11 @@ export class ContestComponent implements OnInit {
       return;
     }
     this.errorMsg = null;
-    this.dataService.submitVotes(this.votes);
+    this.dataService.submitBallot(this.contest, this.votes);
   }
   pollForContestResults() {
     const timerId = setInterval( () => {
-      this.dataService.getContestResults()
+      this.dataService.getBallotsCastCount(this.contest)
         .subscribe( results => {
           // TBD
           clearInterval(timerId);

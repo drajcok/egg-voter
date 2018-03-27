@@ -1,7 +1,8 @@
 
-  <div *ngIf="voters">
-    <select (change)="login($event.target.value)">
-        <option *ngFor="let voter of voters">{{voter}}</option>
+  <div *ngIf="userList">
+    <select id="users" (change)="login($event.target.value)">
+        <option *ngFor="let user of userList">{{user}}</option>
     </select>
+    <p>{{errMsg}}</p>
   </div>
 

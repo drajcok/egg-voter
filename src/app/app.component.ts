@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from './data.service';
+import { User } from './interfaces';
 
 @Component({
   selector: 'egg-root',
@@ -7,9 +8,9 @@ import { DataService } from './data.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  voter: Object;
+  user: User;
   constructor(private dataService: DataService) {}
   ngOnInit() {
-    this.voter = this.dataService.voter;
+    this.user = this.dataService.user;
   }
 }

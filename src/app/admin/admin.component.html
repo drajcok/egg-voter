@@ -2,37 +2,41 @@
   <button (click)="initDb()" class="btn btn-warning">Create DB tables</button>
 </div>
 <div>
-  Users ({{users.length}}): <span>{{users.join(", ")}}</span>
-  <button (click)="getActiveUsers()">refresh</button>
-</div>
-
-<div *ngIf="!contestActive">
-  <form #f="ngForm" (ngSubmit)="createContest()">
-    <div class="form-group">
-      <label for="contest">Contest Name:</label>
-      <input type="text" [(ngModel)]="contest.name" name="contest" class="form-control" required>
-      <label for="ballotSlots">Number of slots on ballot (i.e., how many eggs to vote for):</label>
-      <input type="number" min="1" max="15" [(ngModel)]="contest.ballotSlots" name="ballotSlots" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Create Contest</button>
-  </form>
-</div>
-  
-<div *ngIf="contestActive">
-  Contest: {{contest.name}}
-  <br>Ballot slots (i.e., eggs to vote for): {{contest.ballotSlots}}
-  <br>
-  <button (click)="closeContest()" class="btn btn-primary">Close contest</button>
-  <button id="delete-contest-btn" (click)="deleteContest()" class="btn btn-danger">Delete contest</button>
-  <div>
-    {{contest.votesCast}} votes cast
-    <button (click)="getVotes()">refresh</button>
+  ({{users.length}}) users logged in:    <button (click)="getLoggedInUsers()">refresh</button>
+  <div *ngFor="let user of users">
+    {{user}} <button (click)="logoutUser(user)">logout</button>
   </div>
-  <table>
-    <tr><th>Egg ID</th><th>Votes</th></tr>
-    <tr *ngFor="let vote of contest.votes">
-      <td>{{vote[0]}}<td>{{vote[1]}}
-  </table>
+</div>
+<hr>
+<div [ngSwitch]="state">
+  <div *ngSwitchCase="'noContestActive'">
+    <form #f="ngForm" (ngSubmit)="createContest()">
+      <div class="form-group">
+        <label for="contest">Contest Name:</label>
+        <input type="text" [(ngModel)]="contest.name" name="contest" class="form-control" required>
+        <label for="ballotSlots">Number of slots on ballot (i.e., how many eggs to vote for):</label>
+        <input type="number" min="1" max="15" [(ngModel)]="contest.ballotSlots" name="ballotSlots" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Contest</button>
+    </form>
+  </div>
+  <ng-container *ngSwitchCase="'contestActive'">
+    <p>Contest: {{contest.name}}
+    <br>Ballot slots (i.e., eggs to vote for): {{contest.ballotSlots}}
+    <br></p>
+    <button (click)="closeContest()" class="btn btn-primary">Close contest</button>
+    <button id="delete-contest-btn" (click)="deleteContest()" class="btn btn-danger">Delete contest</button>
+    <div>
+      Contest results:
+      <br>{{contest.ballotsCast}} ballots cast
+      <button (click)="getContestResults()">refresh</button>
+    </div>
+    <table>
+      <tr><th>Egg ID</th><th>Votes</th></tr>
+      <tr *ngFor="let vote of votes">
+        <td>{{vote.id}}<td>{{vote.votes}}
+    </table>
+  </ng-container>
 </div>
 
   

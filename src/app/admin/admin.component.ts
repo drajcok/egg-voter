@@ -7,24 +7,36 @@ import { Vote, Contest } from '../interfaces';
   styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent implements OnInit {
-  showDbStuff   = true;
-  users         = [];
-  contestActive = false;
+  showDbStuff = true;
+  users       = [];
+  state       = 'init';
   contest: Contest;
-  votes: Array<Vote>;
+  votes:   Array<Vote>;
 
   constructor(private dataService: DataService) { }
   ngOnInit() {
-    this.getActiveUsers();
-    this.contest = new Contest(null, 'Adults - Round 1', 5, 0, 0);
+    this.getLoggedInUsers();
+    this.dataService.getContestInfo()
+      .subscribe(
+        (contest) => {
+          this.contest = contest;
+          this.state   = 'contestActive';
+          this.getContestResults(); },
+        err       => {
+          this.contest = new Contest(null, 'Adults - Round 1', 5, 0);
+          this.state   = 'noContestActive'; }
+      );
   }
-  getActiveUsers() {
-    this.dataService.getLoggedInVoters()
-      .subscribe( users =>  // users is a string, one name per line
-        this.users = users.split('\n') );
+  getLoggedInUsers() {
+    this.dataService.getLoggedInUsers()
+      .subscribe( users => this.users = users);
   }
   initDb() {
     this.dataService.initDb();
+  }
+  logoutUser(username: string) {
+    this.dataService.logoutUser(username);
+    setTimeout(() => this.getLoggedInUsers(), 1000);  // hack
   }
   createContest() {
     // console.log(this.contest);
@@ -33,30 +45,30 @@ export class AdminComponent implements OnInit {
       // TBD error on form
       return;
     }
-    this.contest.ballotsCount = this.users.length;
     this.dataService.createContest(this.contest)
       .subscribe(
         data => {
-          this.contestActive = true;
+          this.state = 'contestActive';
           console.log('row ID', data.id);
         },
         err  => console.log(err)
       );
   }
   closeContest() {
-    this.contestActive = false;
-    this.contest       = null;
+    this.state   = 'noContestActive';
+    this.contest = null;
   }
   deleteContest() {
     console.log('TODO');
     this.closeContest();
   }
-  getVotes() {
-    this.dataService.getContestVotes(this.contest.name)
-      .subscribe( votes => {
-        this.votes = votes;
+  getContestResults() {
+    this.dataService.getContestResults(this.contest)
+      .subscribe( results => {
+        console.log(results)
+        this.contest.ballotsCast = results.ballotsCast;
+        this.votes = results.votes;
         // this.contest.votes     = voteInfo.votes;
-        console.log(votes)
       });
   }
 }
