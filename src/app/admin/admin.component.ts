@@ -12,19 +12,24 @@ export class AdminComponent implements OnInit {
   state       = 'init';
   contest: Contest;
   votes:   Array<Vote>;
+  errMsg:  string;
 
   constructor(private dataService: DataService) { }
   ngOnInit() {
     this.getLoggedInUsers();
-    this.dataService.getContestInfo()
+    this.dataService.getActiveContest()
       .subscribe(
         (contest) => {
-          this.contest = contest;
-          this.state   = 'contestActive';
-          this.getContestResults(); },
-        err       => {
-          this.contest = new Contest(null, 'Adults - Round 1', 5, 0);
-          this.state   = 'noContestActive'; }
+          if (contest === null) {
+            this.contest = new Contest(null, 'Adults - Round 1', 5, 0, 0);
+            this.state   = 'noContestActive';
+          } else {
+            this.contest = contest;
+            this.state   = 'contestActive';
+            this.getContestResults();
+          }
+        },
+        err => console.log(err)
       );
   }
   getLoggedInUsers() {
@@ -39,28 +44,44 @@ export class AdminComponent implements OnInit {
     setTimeout(() => this.getLoggedInUsers(), 1000);  // hack
   }
   createContest() {
+    this.errMsg = null;
     // console.log(this.contest);
     if (this.contest.ballotSlots < 1 || this.contest.ballotSlots === undefined
      || this.contest.name.length === 0) {
       // TBD error on form
       return;
     }
+    this.contest.active = 1;
     this.dataService.createContest(this.contest)
       .subscribe(
         data => {
           this.state = 'contestActive';
-          console.log('row ID', data.id);
+          console.log('data:', data);
         },
-        err  => console.log(err)
+        err  => {
+          console.log(err);
+          this.errMsg = JSON.stringify(err);
+        }
       );
   }
-  closeContest() {
+  clearContest() {
     this.state   = 'noContestActive';
-    this.contest = null;
+    this.contest = new Contest(null, '', 5, 0, 1);
+  }
+  closeContest() {
+    this.contest.active = 0;
+    this.dataService.closeContest(this.contest)
+      .subscribe(
+        ()  => this.clearContest(),
+        err => console.log(err)
+      );
   }
   deleteContest() {
-    console.log('TODO');
-    this.closeContest();
+    this.dataService.deleteContest(this.contest)
+      .subscribe(
+        ()  => this.clearContest(),
+        err => console.log(err)
+      );
   }
   getContestResults() {
     this.dataService.getContestResults(this.contest)

@@ -8,8 +8,8 @@
         <label *ngFor="let vote of votes; let i = index; trackBy:trackByIndex">
             {{i+1}}. <input type="number" min="1" max="50" [(ngModel)]="votes[i]" name="vote-{{i}}">
         </label>
-      <button (click)="submitBallot()" class="btn btn-primary"
-              [disabled]="!form.valid">Submit votes</button>
+      <button (click)="castBallot()" class="btn btn-primary"
+              [disabled]="!form.valid">Cast ballot</button>
     </form>
     <div [innerHTML]="errorMsg"></div>
   </div>

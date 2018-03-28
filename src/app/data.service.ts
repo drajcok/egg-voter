@@ -34,10 +34,17 @@ export class DataService {
         .subscribe();
   }
   createContest(contest: Contest) {
-    return this.http.post('api/create_contest', contest);
+    return this.http.post('api/contest', contest);
   }
-  getContestInfo() {
-    return this.http.post<Contest>('api/contest_info', null)
+  deleteContest(contest: Contest) {
+    return this.http.delete(`api/contest/${contest.id}`);
+  }
+  closeContest(contest: Contest) {
+    // if (contest.active !== 0) { console.log('error'); }
+    return this.http.put(`api/contest/${contest.id}`, contest);
+  }
+  getActiveContest() {
+    return this.http.get<Contest>('api/contest')
       .pipe(
         tap( contest => {
           // console.log('service', contest)
@@ -45,18 +52,18 @@ export class DataService {
         })
       );
   }
-  submitBallot(contest, votes) {
-    return this.http.post('api/cast_vote', {
-      user:   this.user,
-      contestId: 
-      votes:   votes,
+  castBallot(user, contest, votes) {
+    return this.http.post('api/ballot', {
+      username:   user.name,
+      contestId:  contest.id,
+      votes:      votes
     });
   }
   getBallotsCastCount(contest: Contest) {
-    return this.http.post('api/ballots_cast', contest);
+    return this.http.get(`api/ballots/${contest.id}`);
   }
   getContestResults(contest: Contest) {
-    return this.http.post('api/contest_results', contest);
+    return this.http.get(`api/contest_results/${contest.id}`);
   }
   initDb() {
     this.http.post('api/initdb', '')

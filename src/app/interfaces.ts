@@ -7,6 +7,7 @@ export class Vote {
 export class Contest {
     constructor(public id: number,
                 public name: string,
-                public ballotSlots: number,     // how many eggs to vote for
-                public ballotsCast: number) {}  // how many ballots have been received
+                public ballotSlots: number,  // how many eggs to vote for
+                public ballotsCast: number,  // how many ballots have been received
+                public active: number ) {}
 }

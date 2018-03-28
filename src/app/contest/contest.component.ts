@@ -30,20 +30,20 @@ export class ContestComponent implements OnInit {
   }
   pollForActiveContest() {
     const timerId = setInterval( () => {
-      this.dataService.getContestInfo()
+      this.dataService.getActiveContest()
         .subscribe( contest => {
-          if(contest === null) { return; }
+          if (contest === null) { return; }
           console.log('contest', contest)
           this.contest           = contest;
           this.waitingForContest = false;
-          this.votes             = Array(contest.ballotSlots);
+          this.votes             = [1,2,3,4,5]; /////Array(contest.ballotSlots);
           this.errorMsg          = null;
           clearInterval(timerId);
          });
       // console.log('polling', new Date);
     }, this.pollingPeriod);
   }
-  submitVotes() {
+  castBallot() {
     console.log('votes', this.votes)
     if (!this.votes.every( vote => vote > 0 && vote <= this.maxEggCount )) {
       this.errorMsg = 'Something looks wrong with your votes.  Are they all numbers?';
@@ -56,7 +56,11 @@ export class ContestComponent implements OnInit {
       return;
     }
     this.errorMsg = null;
-    this.dataService.submitBallot(this.contest, this.votes);
+    this.dataService.castBallot(this.user, this.contest, this.votes)
+      .subscribe(
+        ()  => console.log('ballot cast'),
+        err => console.log(err)
+      );
   }
   pollForContestResults() {
     const timerId = setInterval( () => {
