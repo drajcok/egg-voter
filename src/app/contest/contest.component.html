@@ -21,7 +21,7 @@
     </ul>
     <div>{{ballotsMsg}}</div>
     <div *ngIf="results">Results: 
-      <p>{{results}}
+      <p>{{results | json}}
     </div>
   </ng-container>
 <div [innerHTML]="errorMsg"></div>

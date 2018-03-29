@@ -178,7 +178,8 @@ app.post('/api/votes', (req, res) => {
 app.get('/api/contest_results/:id', nocache, (req, res) => {
 	// TBD SELECT * from votes where contestId = ?, req.params.id
 	let contestId = Number(req.params.id);
-	db.all('SELECT * from votes WHERE contestId = ?',
+	db.all('SELECT itemId, count(itemId) AS votes from votes WHERE contestId = ? ' +
+		   'GROUP BY itemId ORDER BY votes DESC',
 		[contestId], (err, rows) => {
 			if(err) {
 				console.log(err);
@@ -187,7 +188,7 @@ app.get('/api/contest_results/:id', nocache, (req, res) => {
 				console.log(rows)
 				res.json({
 					ballotsCast: 4,
-					votes: [{id: 1, votes: 2} , {id: 18, votes: 3} ],
+					votes: rows,
 					ballotCount: 4
 				});						}
 	});

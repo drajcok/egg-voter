@@ -77,11 +77,10 @@ export class ContestComponent implements OnInit {
       this.dataService.getContestResults(this.contest)
         .subscribe( results => {
           console.log(results)
+          this.ballotsMsg = `${results.ballotsCast} ballots cast out of ${results.ballotCount}`;
           if (results.ballotCount === results.ballotsCast) {
             clearInterval(timerId);
             this.results = results;
-          } else {
-            this.ballotsMsg = `${results.ballotsCast} ballots cast out of ${results.ballotCount}...`;
           }
          });
     }, 5000);
