@@ -2,16 +2,19 @@
   <div class="container-fluid">
     <nav class="navbar navbar-expand navbar-light bg-light row">
       <a class="navbar-brand" routerLink="/">Egg Voter</a>
-      <div id="navbar" class="navbar-nav mr-auto">
-      </div>
+      <div id="navbar" class="navbar-nav mr-auto"></div>
       <div class="navbar-nav">
         <a *ngIf="!user.name" class="nav-item nav-link" routerLink="/login">Login</a>
         <a *ngIf="user.name" class="nav-item nav-link" routerLink="/login">{{user.name}}</a>
       </div>
     </nav>
-    </div>
+  </div>
 </header>
 
 <div id="content">
+  <div *ngIf="url === '/'">
+    <button routerLink="/contest" class="btn btn-primary">Vote</button>
+    <button routerLink="/contest/results" class="btn btn-primary">Contest Results</button>
+  </div>
   <router-outlet></router-outlet>
 </div>

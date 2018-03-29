@@ -56,6 +56,7 @@ export class AdminComponent implements OnInit {
       .subscribe(
         data => {
           this.state = 'contestActive';
+          this.contest.id = data.id;
           console.log('data:', data);
         },
         err  => {
@@ -87,6 +88,7 @@ export class AdminComponent implements OnInit {
     this.dataService.getContestResults(this.contest)
       .subscribe( results => {
         console.log(results)
+        this.results = results;
         this.contest.ballotsCast = results.ballotsCast;
         this.votes = results.votes;
         // this.contest.votes     = voteInfo.votes;

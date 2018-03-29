@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { DataService } from './data.service';
 import { User } from './interfaces';
+import 'rxjs/add/operator/filter';
 
 @Component({
   selector: 'egg-root',
@@ -9,8 +11,17 @@ import { User } from './interfaces';
 })
 export class AppComponent implements OnInit {
   user: User;
-  constructor(private dataService: DataService) {}
+  url:  string;
+  constructor(private dataService: DataService, private router: Router) {}
   ngOnInit() {
     this.user = this.dataService.user;
+    this.router.events
+      .filter(event => event instanceof NavigationEnd)
+      .subscribe(event => this.url = event.url);
+    if (location.pathname !== '/admin') {
+      if (!this.user.name) {
+        this.router.navigateByUrl('login');
+      }
+    }
   }
 }

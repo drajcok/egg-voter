@@ -9,8 +9,8 @@ import { Router } from '@angular/router';
 })
 export class ContestComponent implements OnInit {
   maxEggCount       = 50;
-  pollingPeriod     = 5 * 1000;  // 5 seconds
-  waitingForContest = true;
+  pollingPeriod     = 1 * 1000;  // 5 seconds
+  state             = 'waitingForContestStart';
   user:      User;
   contest:   Contest;
   votes:     Array<number>;
@@ -32,13 +32,23 @@ export class ContestComponent implements OnInit {
     const timerId = setInterval( () => {
       this.dataService.getActiveContest()
         .subscribe( contest => {
+          this.errorMsg  = null;
           if (contest === null) { return; }
-          console.log('contest', contest)
-          this.contest           = contest;
-          this.waitingForContest = false;
-          this.votes             = [1,2,3,4,5]; /////Array(contest.ballotSlots);
-          this.errorMsg          = null;
           clearInterval(timerId);
+          console.log('contest', contest)
+          this.contest = contest;
+          this.dataService.getVotes(this.user, this.contest)
+            .subscribe( votes => {
+              if (votes === null) {
+                this.state = 'voting';
+                this.votes = [1,2,3,4,5]; /////Array(contest.ballotSlots);
+              } else {
+                this.state = 'voted';
+                console.log('votes:', votes)
+                this.votes = votes;
+                this.pollForContestResults();
+              }
+            });
          });
       // console.log('polling', new Date);
     }, this.pollingPeriod);
@@ -64,12 +74,16 @@ export class ContestComponent implements OnInit {
   }
   pollForContestResults() {
     const timerId = setInterval( () => {
-      this.dataService.getBallotsCastCount(this.contest)
+      this.dataService.getContestResults(this.contest)
         .subscribe( results => {
-          // TBD
-          clearInterval(timerId);
+          console.log(results)
+          if (results.ballotCount === results.ballotsCast) {
+            clearInterval(timerId);
+            this.results = results;
+          } else {
+            this.ballotsMsg = `${results.ballotsCast} ballots cast out of ${results.ballotCount}...`;
+          }
          });
-      console.log(new Date);
     }, 5000);
   }
 }

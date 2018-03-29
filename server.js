@@ -58,14 +58,16 @@ app.post('/api/contest', (req, res) => {  // create a new contest
 	db.run(`INSERT INTO contests 
 		(name, ballotSlots, ballotsCast, active) VALUES (?,?,?,?)`,
 		[contest.name, contest.ballotSlots, 0, 1],
-		function(err) {
+		function(err) {  // can't use an arrow function here, otherwise this.lastID doesn't work
 			if(err) {
 				console.log(err);
 				res.status(500).end(JSON.stringify(err));
 			} else {
 				activeContest = contest;
+				contestId     = this.lastID;
+				activeContest.id = contestId;
 				console.log('rowid:', this);
-				res.json({ id: this.lastID});
+				res.json({ id: contestId});
 			}
 		}
 	);
@@ -82,9 +84,10 @@ app.put('/api/contest/:id', (req, res) => {  // CURRENTLY ONLY USED TO CLOSE THE
 		res.status(400).end(`There is no active contest to update.`);
 		return;
 	}
-	if (activeContest.id != req.params.id) {
+	let contestId = Number(req.params.id);
+	if (activeContest.id !== contestId) {
 		res.status(400).end(`Contest IDs don't match: ` +
-			`active=${activeContest.id}, requested=${req.params.id}`);
+			`active=${activeContest.id}, requested=${contestId}`);
 		return;
 	}
 	// req.body:  Contest obj
@@ -94,7 +97,7 @@ app.put('/api/contest/:id', (req, res) => {  // CURRENTLY ONLY USED TO CLOSE THE
 		console.log("UNEXPECTED DATA");
 		res.sendStatus(400);
 	}
-	db.run('UPDATE contests SET active = 0 WHERE id = ?', req.params.id,
+	db.run('UPDATE contests SET active = 0 WHERE id = ?', contestId,
 		function(err) {
 			if(err) {
 				console.log(err);
@@ -111,12 +114,13 @@ app.delete('/api/contest/:id', (req, res) => {
 		res.status(400).end('There is no active contest to delete.');
 		return;
 	}
-	if (activeContest.id !== req.params.id) {
+	let contestId = Number(req.params.id);
+	if (activeContest.id !== contestId) {
 		res.status(400).end(`Contest IDs don't match: ` + 
-			`active=${activeContest.id}, requested=${req.params.id}`);
+			`active=${activeContest.id}, requested=${contestId}`);
 		return;
 	}
-	db.run('DELETE FROM contests WHERE id = ?', req.params.id,
+	db.run('DELETE FROM contests WHERE id = ?', contestId,
 		function(err) {
 			if(err) {
 				console.log(err);
@@ -129,23 +133,24 @@ app.delete('/api/contest/:id', (req, res) => {
 	);
 });
 app.post('/api/ballot', (req, res) => {  // cast a ballot
-	console.log(req.body);  // obj, keys are username, contestId, votes
+	console.log('ballot:', req.body);    // obj, keys are username, contestId, votes
 	if(activeContest === null) {
 		res.status(400).end('There is no active contest.');
 		return;
 	}
 	let username  = req.body.username,
 		contestId = req.body.contestId,
-		votes     = req.body.votes;
+		votes     = req.body.votes;    // this is an array of egg numbers
 	if (activeContest.id !== contestId) {
 		res.status(400).end(`Contest IDs don't match: ` + 
 			`active=${activeContest.id}, requested=${contestId}`);
 		return;
 	}
-	// TODO, this isn't working
 	let placeholders = votes.map( vote => '(?,?,?)' ).join(',');
-	let values = votes.map( vote => [contestId, username, vote] );
-	let sql = `INSERT INTO votes (contestId, voter, itemId) VALUES ${placeholders}`;
+	let values       = []
+	votes.forEach( vote =>  values.push(contestId, username, vote) );
+	let sql          = `INSERT INTO votes (contestId, voter, itemId) VALUES ${placeholders}`;
+	console.log('sql:', sql, '\nvalues:', values);
 	db.run(sql, values,
 		function(err) {
 			if(err) {
@@ -157,17 +162,34 @@ app.post('/api/ballot', (req, res) => {  // cast a ballot
 		}
 	);
 });
-app.get('/api/ballots', nocache, (req, res) => {
-	// TBD verify that contest is currently the active one
-	console.log(req.body)
-	let contest = req.body
-	res.json( {ballotsCast: 2} );
+app.post('/api/votes', (req, res) => {
+	let username  = req.body.username,
+		contestId = req.body.contestId;
+	db.all('SELECT * from votes WHERE voter = ? AND contestId = ?',
+		[username, contestId], (err, rows) => {
+			if(err) {
+				console.log(err);
+				res.status(500).end(JSON.stringify(err));
+			} else {
+				res.json(rows);
+			}
+	});
 });
 app.get('/api/contest_results/:id', nocache, (req, res) => {
 	// TBD SELECT * from votes where contestId = ?, req.params.id
-	res.json({
-		ballotsCast: 2,
-		votes: [{id: 1, votes: 2} , {id: 18, votes: 3} ]
+	let contestId = Number(req.params.id);
+	db.all('SELECT * from votes WHERE contestId = ?',
+		[contestId], (err, rows) => {
+			if(err) {
+				console.log(err);
+				res.status(500).end(JSON.stringify(err));
+			} else {
+				console.log(rows)
+				res.json({
+					ballotsCast: 4,
+					votes: [{id: 1, votes: 2} , {id: 18, votes: 3} ],
+					ballotCount: 4
+				});						}
 	});
 });
 app.post('/api/initdb', (req, res) => {
@@ -181,7 +203,8 @@ app.post('/api/initdb', (req, res) => {
 			ballotsCast integer,
 			active integer)`);
 		db.run(`CREATE TABLE votes (
-			contestId integer PRIMARY KEY,
+			id integer PRIMARY KEY,
+			contestId integer,
 			voter text,
 			itemId integer)`);
 		});

@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
     }
     this.dataService.login(username)
       .subscribe(
-        ()    => this.router.navigateByUrl('/contest'),
+        ()    => this.router.navigateByUrl('/'),
         (err) => {
           console.log('err', err);
           this.errMsg = `login failed: ${err.error}`;

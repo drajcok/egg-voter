@@ -5,8 +5,8 @@ import { User, Contest } from './interfaces';
 
 @Injectable()
 export class DataService {
-  user = new User('');  // do not create another User... components have a reference to this one
-  contest: Contest;
+  user = new User('Mark');  // DEBUG
+  //user = new User('');  // do not create another User... components have a reference to this one
 
   constructor(private http: HttpClient) {}
   getUserList() {
@@ -48,9 +48,15 @@ export class DataService {
       .pipe(
         tap( contest => {
           // console.log('service', contest)
-          this.contest = contest;
+          // this.contest = contest;
         })
       );
+  }
+  getVotes(user, contest) {
+    return this.http.post('api/votes', {
+      username:  user.name,
+      contestId: contest.id
+    });
   }
   castBallot(user, contest, votes) {
     return this.http.post('api/ballot', {
@@ -58,9 +64,6 @@ export class DataService {
       contestId:  contest.id,
       votes:      votes
     });
-  }
-  getBallotsCastCount(contest: Contest) {
-    return this.http.get(`api/ballots/${contest.id}`);
   }
   getContestResults(contest: Contest) {
     return this.http.get(`api/contest_results/${contest.id}`);

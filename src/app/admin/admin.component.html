@@ -26,17 +26,17 @@
     <br></p>
     <button (click)="closeContest()" class="btn btn-primary">Close contest</button>
     <button id="delete-contest-btn" (click)="deleteContest()" class="btn btn-danger">Delete contest</button>
-    <div>
+    <div *ngIf="results">
       Contest results:
-      <br>{{contest.ballotsCast}} ballots cast
+      <br>{{results.ballotsCast}} ballots cast out of {{results.ballotCount}}
       <button (click)="getContestResults()">refresh</button>
+      <table>
+        <tr><th>Egg ID</th><th>Votes</th></tr>
+        <tr *ngFor="let vote of votes">
+          <td>{{vote.id}}<td>{{vote.votes}}
+      </table>
     </div>
-    <table>
-      <tr><th>Egg ID</th><th>Votes</th></tr>
-      <tr *ngFor="let vote of votes">
-        <td>{{vote.id}}<td>{{vote.votes}}
-    </table>
-  </ng-container>
+</ng-container>
 </div>
 contest: {{contest | json}}
 <br>{{errMsg}}

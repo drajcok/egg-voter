@@ -1,7 +1,8 @@
-<div *ngIf="!user.name">Use the login button to login.</div>
-<div *ngIf="user.name">
-  <div *ngIf="waitingForContest">Checking for an active contest... please wait...</div>
-  <div *ngIf="!waitingForContest">
+<div [ngSwitch]="state">
+  <div *ngSwitchCase="'waitingForContestStart'">
+    Checking for an active contest... please wait...
+  </div>
+  <ng-container *ngSwitchCase="'voting'">
     <div id="contest-name">{{contest.name}}</div>
     <div>Please vote for {{contest.ballotSlots}} eggs:</div>
     <form #form="ngForm">
@@ -11,6 +12,16 @@
       <button (click)="castBallot()" class="btn btn-primary"
               [disabled]="!form.valid">Cast ballot</button>
     </form>
-    <div [innerHTML]="errorMsg"></div>
-  </div>
-</div>
+  </ng-container>
+  <ng-container *ngSwitchCase="'voted'">
+    <div id="contest-name">{{contest.name}}</div>
+    <div>Your votes:</div>
+    <ul>
+      <li *ngFor="let vote of votes">{{vote.itemId}}
+    </ul>
+    <div>{{ballotsMsg}}</div>
+    <div *ngIf="results">Results: 
+      <p>{{results}}
+    </div>
+  </ng-container>
+<div [innerHTML]="errorMsg"></div>
