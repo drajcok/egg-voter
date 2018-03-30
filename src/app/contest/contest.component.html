@@ -6,22 +6,29 @@
     <div id="contest-name">{{contest.name}}</div>
     <div>Please vote for {{contest.ballotSlots}} eggs:</div>
     <form #form="ngForm">
-        <label *ngFor="let vote of votes; let i = index; trackBy:trackByIndex">
-            {{i+1}}. <input type="number" min="1" max="50" [(ngModel)]="votes[i]" name="vote-{{i}}">
-        </label>
+      <label *ngFor="let vote of votes; let i = index; trackBy:trackByIndex">
+          {{i+1}}. <input type="number" min="1" max="50" [(ngModel)]="votes[i]" name="vote-{{i}}">
+      </label>
       <button (click)="castBallot()" class="btn btn-primary"
               [disabled]="!form.valid">Cast ballot</button>
     </form>
   </ng-container>
   <ng-container *ngSwitchCase="'voted'">
     <div id="contest-name">{{contest.name}}</div>
-    <div>Your votes:</div>
+    <div>Eggs you voted for:</div>
     <ul>
-      <li *ngFor="let vote of votes">{{vote.itemId}}
+      <li *ngFor="let vote of votes">{{vote}}
     </ul>
     <div>{{ballotsMsg}}</div>
-    <div *ngIf="results">Results: 
-      <p>{{results | json}}
-    </div>
+    <!-- <div *ngIf="contestResults">
+      Voting results: 
+      <table>
+        <tr><th>Egg #</th><th>Votes</th></tr>
+        <tr *ngFor="let vote of contestResults.votes">
+          <td>{{vote.itemId}}<td>{{vote.votes}}
+      </table>
+      </div>
+    -->
   </ng-container>
+</div>
 <div [innerHTML]="errorMsg"></div>

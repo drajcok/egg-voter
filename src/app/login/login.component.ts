@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  selectDefault = ['select your name'];
+  selectDefault = ['--select your name--'];
   userList      = [];
   errMsg: string;
   constructor(private dataService: DataService, private router: Router) {}

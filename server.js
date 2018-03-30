@@ -43,8 +43,7 @@ app.get('/api/user_list', (req, res) => {
 	////res.sendFile(path.join(__dirname, '/dist/userlist.txt'));
 	res.sendFile(path.join(__dirname, '/src/assets/userlist.txt'));
 });
-app.post('/api/loggedin_users', (req, res) => {
-	// req.body:  null
+app.get('/api/loggedin_users', nocache, (req, res) => {
 	res.json(users);
 });
 app.post('/api/contest', (req, res) => {  // create a new contest
@@ -56,15 +55,15 @@ app.post('/api/contest', (req, res) => {  // create a new contest
 	}
 	let contest = req.body;
 	db.run(`INSERT INTO contests 
-		(name, ballotSlots, ballotsCast, active) VALUES (?,?,?,?)`,
-		[contest.name, contest.ballotSlots, 0, 1],
+		(name, ballotSlots, ballotCount, active) VALUES (?,?,?,?)`,
+		[contest.name, contest.ballotSlots, contest.ballotCount, 1],
 		function(err) {  // can't use an arrow function here, otherwise this.lastID doesn't work
 			if(err) {
 				console.log(err);
 				res.status(500).end(JSON.stringify(err));
 			} else {
-				activeContest = contest;
-				contestId     = this.lastID;
+				activeContest    = contest;
+				contestId        = this.lastID;
 				activeContest.id = contestId;
 				console.log('rowid:', this);
 				res.json({ id: contestId});
@@ -104,7 +103,7 @@ app.put('/api/contest/:id', (req, res) => {  // CURRENTLY ONLY USED TO CLOSE THE
 				res.sendStatus(500);
 			} else {
 				activeContest = null;
-				res.status(200);
+				res.sendStatus(200);
 			}
 		}
 	);
@@ -157,14 +156,14 @@ app.post('/api/ballot', (req, res) => {  // cast a ballot
 				console.log(err);
 				res.status(500).end(JSON.stringify(err));
 			} else {
-				res.status(200);
+				res.sendStatus(200);
 			}
 		}
 	);
 });
-app.post('/api/votes', (req, res) => {
-	let username  = req.body.username,
-		contestId = req.body.contestId;
+app.get('/api/ballot/:username/:contestId', (req, res) => {
+	let username  = req.params.username,
+		contestId = Number(req.params.contestId);;
 	db.all('SELECT * from votes WHERE voter = ? AND contestId = ?',
 		[username, contestId], (err, rows) => {
 			if(err) {
@@ -176,23 +175,38 @@ app.post('/api/votes', (req, res) => {
 	});
 });
 app.get('/api/contest_results/:id', nocache, (req, res) => {
-	// TBD SELECT * from votes where contestId = ?, req.params.id
 	let contestId = Number(req.params.id);
-	db.all('SELECT itemId, count(itemId) AS votes from votes WHERE contestId = ? ' +
-		   'GROUP BY itemId ORDER BY votes DESC',
-		[contestId], (err, rows) => {
-			if(err) {
-				console.log(err);
-				res.status(500).end(JSON.stringify(err));
-			} else {
-				console.log(rows)
+	db.all('select distinct(voter) from votes where contestId = ?', contestId,
+	  	(err, voters) => {  // voters are those who cast a ballot
+		if(err) {
+			console.log('err:', err);
+			res.status(500).end(JSON.stringify(err));
+		} else {
+			console.log('voters:', voters)
+			if (voters.length !== activeContest.ballotCount) {
 				res.json({
-					ballotsCast: 4,
-					votes: rows,
-					ballotCount: 4
-				});						}
-	});
-});
+					voters: voters.map(v => v.voter),
+					votes:  [],
+				});
+			} else {
+				db.all('SELECT itemId, count(itemId) AS votes from votes WHERE contestId = ? ' +
+					'GROUP BY itemId HAVING votes > 1 ORDER BY votes DESC ',
+					[contestId], (err, votes) => {
+					if(err) {
+						console.log('err:', err);
+						res.status(500).end(JSON.stringify(err));
+					} else {
+						console.log('votes2:', votes)
+						res.json({
+							voters: voters.map(v => v.voter),
+							votes:  votes
+						});
+					}}
+				);
+			}
+		}}
+	);
+});	
 app.post('/api/initdb', (req, res) => {
 	console.log("creating DB tables")
 	db.serialize( () => {
@@ -201,7 +215,7 @@ app.post('/api/initdb', (req, res) => {
 			id integer PRIMARY KEY,
 			name text UNIQUE,
 			ballotSlots integer,
-			ballotsCast integer,
+			ballotCount integer,
 			active integer)`);
 		db.run(`CREATE TABLE votes (
 			id integer PRIMARY KEY,

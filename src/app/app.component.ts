@@ -17,10 +17,12 @@ export class AppComponent implements OnInit {
     this.user = this.dataService.user;
     this.router.events
       .filter(event => event instanceof NavigationEnd)
-      .subscribe(event => this.url = event.url);
+      .subscribe( (event: any) => this.url = event.url);
     if (location.pathname !== '/admin') {
       if (!this.user.name) {
         this.router.navigateByUrl('login');
+      } else {
+        this.router.navigateByUrl('contest');
       }
     }
   }

@@ -2,7 +2,7 @@
   <button (click)="initDb()" class="btn btn-warning">Create DB tables</button>
 </div>
 <div>
-  ({{users.length}}) users logged in:    <button (click)="getLoggedInUsers()">refresh</button>
+  {{users.length}} users logged in:    <button (click)="getLoggedInUsers()">refresh</button>
   <div *ngFor="let user of users">
     {{user}} <button (click)="logoutUser(user)">logout</button>
   </div>
@@ -16,6 +16,8 @@
         <input type="text" [(ngModel)]="contest.name" name="contest" class="form-control" required>
         <label for="ballotSlots">Number of slots on ballot (i.e., how many eggs to vote for):</label>
         <input type="number" min="1" max="15" [(ngModel)]="contest.ballotSlots" name="ballotSlots" class="form-control" required>
+        <label for="ballotCount">Number of ballots/voters:</label>
+        <input type="number" min="1" max="20" [(ngModel)]="contest.ballotCount" name="ballotCount" class="form-control" required>
       </div>
       <button type="submit" class="btn btn-primary">Create Contest</button>
     </form>
@@ -25,14 +27,16 @@
     <br>Ballot slots (i.e., eggs to vote for): {{contest.ballotSlots}}
     <br></p>
     <button (click)="closeContest()" class="btn btn-primary">Close contest</button>
-    <button id="delete-contest-btn" (click)="deleteContest()" class="btn btn-danger">Delete contest</button>
-    <div *ngIf="results">
+    <span *ngIf="showDelete">
+      <button id="delete-contest-btn" (click)="deleteContest()" class="btn btn-danger">Delete contest</button>
+    </span>
+    <div *ngIf="contestResults">
       Contest results:
-      <br>{{results.ballotsCast}} ballots cast out of {{results.ballotCount}}
       <button (click)="getContestResults()">refresh</button>
+      <div>{{ballotMsg}}</div>
       <table>
-        <tr><th>Egg ID</th><th>Votes</th></tr>
-        <tr *ngFor="let vote of votes">
+        <tr><th>Egg #</th><th>Votes</th></tr>
+        <tr *ngFor="let vote of contestResults.votes">
           <td>{{vote.itemId}}<td>{{vote.votes}}
       </table>
     </div>

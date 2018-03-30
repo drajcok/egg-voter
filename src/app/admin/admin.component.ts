@@ -1,18 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService} from '../data.service';
-import { Vote, Contest } from '../interfaces';
+import { Contest, ContestResults } from '../interfaces';
 
 @Component({
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent implements OnInit {
-  showDbStuff = true;
+  showDbStuff = false;
+  showDelete  = false;
   users       = [];
   state       = 'init';
-  contest: Contest;
-  votes:   Array<Vote>;
-  errMsg:  string;
+  contest:        Contest;
+  errMsg:         string;
+  ballotMsg:      string;
+  contestResults: ContestResults;
 
   constructor(private dataService: DataService) { }
   ngOnInit() {
@@ -21,7 +23,7 @@ export class AdminComponent implements OnInit {
       .subscribe(
         (contest) => {
           if (contest === null) {
-            this.contest = new Contest(null, 'Adults - Round 1', 5, 0, 0);
+            this.contest = new Contest(null, '', 0, 0, 0);
             this.state   = 'noContestActive';
           } else {
             this.contest = contest;
@@ -47,14 +49,15 @@ export class AdminComponent implements OnInit {
     this.errMsg = null;
     // console.log(this.contest);
     if (this.contest.ballotSlots < 1 || this.contest.ballotSlots === undefined
-     || this.contest.name.length === 0) {
+        || this.contest.ballotCount < 1 || this.contest.ballotCount === undefined
+        || this.contest.name.length === 0) {
       // TBD error on form
       return;
     }
     this.contest.active = 1;
     this.dataService.createContest(this.contest)
       .subscribe(
-        data => {
+        (data: any) => {
           this.state = 'contestActive';
           this.contest.id = data.id;
           console.log('data:', data);
@@ -67,7 +70,8 @@ export class AdminComponent implements OnInit {
   }
   clearContest() {
     this.state   = 'noContestActive';
-    this.contest = new Contest(null, '', 5, 0, 1);
+    this.contest = new Contest(null, '', 0, 0, 1);
+    this.contestResults = null;
   }
   closeContest() {
     this.contest.active = 0;
@@ -87,10 +91,10 @@ export class AdminComponent implements OnInit {
   getContestResults() {
     this.dataService.getContestResults(this.contest)
       .subscribe( results => {
+        this.ballotMsg = `${results.voters.length} of ${this.contest.ballotCount} `
+            + 'ballots cast by ' + results.voters.join(', ');
         console.log(results)
-        this.results = results;
-        this.contest.ballotsCast = results.ballotsCast;
-        this.votes = results.votes;
+        this.contestResults = results;
         // this.contest.votes     = voteInfo.votes;
       });
   }

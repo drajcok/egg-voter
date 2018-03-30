@@ -1,7 +1,7 @@
 <header class="no-text-select">
   <div class="container-fluid">
     <nav class="navbar navbar-expand navbar-light bg-light row">
-      <a class="navbar-brand" routerLink="/">Egg Voter</a>
+      <a class="navbar-brand" routerLink="/">Easter Egg Voter App</a>
       <div id="navbar" class="navbar-nav mr-auto"></div>
       <div class="navbar-nav">
         <a *ngIf="!user.name" class="nav-item nav-link" routerLink="/login">Login</a>
@@ -13,8 +13,8 @@
 
 <div id="content">
   <div *ngIf="url === '/'">
-    <button routerLink="/contest" class="btn btn-primary">Vote</button>
-    <button routerLink="/contest/results" class="btn btn-primary">Contest Results</button>
+    <button routerLink="/contest" class="btn btn-primary">Vote in a contest</button>
+    <!--<button routerLink="/contest/results" class="btn btn-primary">Contest Results</button>-->
   </div>
   <router-outlet></router-outlet>
 </div>
